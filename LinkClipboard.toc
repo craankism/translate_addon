@@ -1,0 +1,6 @@
+## Interface: 110200
+## Title: Link Clipboard
+## Author: Shrumble
+## Version: 1.3
+## Notes: turns links in chat into copyable text in a seperate window
+LinkClipboard.lua
