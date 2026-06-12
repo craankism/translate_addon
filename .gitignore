@@ -1,0 +1,4 @@
+# Ignore configuration files that may contain sensitive information
+config.lua
+.DS_Store
+.vscode
