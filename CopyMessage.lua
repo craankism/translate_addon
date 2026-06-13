@@ -1,11 +1,9 @@
 local ADDON_NAME = ...
 
-local DEEPL_API_KEY = "YOUR_DEEPL_API_KEY" -- TODO: Replace with your actual DeepL API key
-
-local function ShowClipboardWindow(link, canTranslate)
+local function ShowClipboardWindow(link)
     if not ClipboardFrame then
         local frame = CreateFrame("Frame", "ClipboardFrame", UIParent, "BackdropTemplate")
-        frame:SetSize(420, 200) -- Increased height
+        frame:SetSize(420, 140)
         frame:SetPoint("CENTER")
         frame:SetFrameStrata("DIALOG")
         frame:SetBackdrop({
@@ -22,7 +20,7 @@ local function ShowClipboardWindow(link, canTranslate)
 
         frame.editBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
         frame.editBox:SetSize(380, 30)
-        frame.editBox:SetPoint("TOP", 0, -40)
+        frame.editBox:SetPoint("CENTER", 0, -5)
         frame.editBox:SetAutoFocus(true)
 
         frame.editBox:SetScript("OnEditFocusGained", function(self)
@@ -35,47 +33,9 @@ local function ShowClipboardWindow(link, canTranslate)
             frame:Hide()
         end)
 
-        -- Translation result display
-        frame.translationResult = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        frame.translationResult:SetSize(380, 80)
-        frame.translationResult:SetPoint("TOP", frame.editBox, "BOTTOM", 0, -10)
-        frame.translationResult:SetJustifyH("LEFT")
-        frame.translationResult:SetJustifyV("TOP")
-
-        -- Translate Button
-        frame.translateButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-        frame.translateButton:SetSize(100, 25)
-        frame.translateButton:SetPoint("BOTTOMLEFT", 20, 12)
-        frame.translateButton:SetText("Translate")
-        frame.translateButton:SetScript("OnClick", function()
-            local textToTranslate = frame.editBox:GetText()
-            if textToTranslate and textToTranslate ~= "" then
-                frame.translationResult:SetText("Translating...")
-                local request = C_HTTP.NewRequest()
-                request:SetURL("https://api-free.deepl.com/v2/translate")
-                request:SetMethod("POST")
-                request:SetBody(string.format("text=%s&target_lang=EN", C_Web.EncodeURL(textToTranslate)))
-                request:SetHeader("Authorization", "DeepL-Auth-Key " .. DEEPL_API_KEY)
-                request:SetHeader("Content-Type", "application/x-www-form-urlencoded")
-                request:SetCallback(function(result)
-                    if result:IsSuccess() then
-                        local body = C_JSON.Decode(result:GetBody())
-                        if body and body.translations and #body.translations > 0 then
-                            frame.translationResult:SetText(body.translations[1].text)
-                        else
-                            frame.translationResult:SetText("Translation failed: Invalid response.")
-                        end
-                    else
-                        frame.translationResult:SetText("Translation failed: HTTP error.")
-                    end
-                end)
-                request:Send()
-            end
-        end)
-
         frame.exitButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
         frame.exitButton:SetSize(80, 25)
-        frame.exitButton:SetPoint("BOTTOMRIGHT", -20, 12)
+        frame.exitButton:SetPoint("BOTTOM", 0, 12)
         frame.exitButton:SetText("Exit")
         frame.exitButton:SetScript("OnClick", function()
             frame:Hide()
@@ -83,9 +43,6 @@ local function ShowClipboardWindow(link, canTranslate)
 
         ClipboardFrame = frame
     end
-
-    ClipboardFrame.translationResult:SetText("") -- Clear previous translation
-    ClipboardFrame.translateButton:SetShown(canTranslate)
 
     ClipboardFrame:Show()
     ClipboardFrame.editBox:SetText(link)
@@ -112,7 +69,7 @@ local function AddCopyButtons(self, event, message, ...)
     -- Check for Cyrillic characters
     if message:find("[\128-\191\208-\209][\128-\191]") then
         local newMsg = message:gsub("[\n\r]", " ") -- Sanitize newlines for the link
-        return false, string.format("%s |cffffff00|Haddon:LinkClipboard:translate:%s|h[Copy|Translate]|h|r", message, newMsg), ...
+        return false, string.format("%s |cffffff00|Haddon:LinkClipboard:translate:%s|h[Copy]|h|r", message, newMsg), ...
     end
 
     local newMsg = message:gsub("(https?://[%w-_%.%?%.:/%+=&%%#@~]+)", function(url)

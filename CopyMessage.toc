@@ -1,0 +1,6 @@
+## Interface: 110002
+## Title: Copy RU Message
+## Author: Craankism
+## Version: 1.0
+## Notes: able to copy russian messages for translation
+CopyMessage.lua
